@@ -59,16 +59,32 @@
       border: none;
       font-size: large;
       text-align: center;
+      filter: brightness(100%);
+      transition: filter 0.2s;
+      border-radius: 9999px;
     }
+
+    #grade-popout-container button:hover {
+      filter: brightness(75%);
+    }
+
+    #grade-popout-container button:active {
+      filter: brightness(100%) saturate(50%);
+    }
+
 
     #grade-popout-close-button {
       color: black;
-      background-color: #c49292;
+      background-color: #FF5F57;
     }
 
     #grade-popout-toggle-button {
       color: black;
-      background-color: light-gray;
+      background-color: #28C840;
+    }
+
+    #grade-popout-container.open #grade-popout-toggle-button {
+      background-color: #FEBC2E;
     }
     
     #grade-popout-container.open #grade-popout-toggle-button::after {
@@ -166,6 +182,7 @@
 
       elements.savetext.innerText = elements.gradebook.ajaxWarning.innerText;
       this._mutationObserver = new MutationObserver(() => {
+        elements.savetext.innerText = elements.gradebook.ajaxWarning.innerText;
         elements.savetext.style.display =
           elements.gradebook.ajaxWarning.style.display;
       });
@@ -192,6 +209,7 @@
     static _onDisable() {
       elements.openButton.style.visibility = "";
       elements.container.style.visibility = "hidden";
+      this.popin();
     }
     static _onEnable() {
       elements.openButton.style.visibility = "hidden";
@@ -201,10 +219,8 @@
     static _onToggle() {
       this._onEnable();
       if (this._isPoppedOut) {
-        elements.container.classList.remove("open");
         this.popin();
       } else {
-        elements.container.classList.add("open");
         this.popout();
       }
     }
@@ -218,6 +234,7 @@
 
     static popin() {
       if (!this._isPoppedOut) return;
+      elements.container.classList.remove("open");
 
       let last = elements.gradebook.overviewHeader;
       for (const node of this._elements) {
@@ -229,6 +246,7 @@
 
     static popout() {
       if (this._isPoppedOut) return;
+      elements.container.classList.add("open");
 
       for (const node of this._elements) {
         elements.container.appendChild(node);

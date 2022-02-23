@@ -28,6 +28,12 @@
       latest_url:
         "https://web.stanford.edu/~jdkula/cs110_mods/cs110_markdown.user.js",
     },
+    hoverloader: {
+      stable_url:
+        "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@stable/cs110_hoverloader.user.js",
+      latest_url:
+        "https://web.stanford.edu/~jdkula/cs110_mods/cs110_hoverloader.user.js",
+    },
   };
 
   var config = JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
