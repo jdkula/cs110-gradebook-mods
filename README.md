@@ -10,6 +10,11 @@ Provides a small floating button that can be used to bring the criteria into a
 fixed floating window (avoids needing to scroll up/down to update the criteria
 or overall comment)
 
+## [Hoverloader](cs110_hoverloader.user.js)
+
+No more "Saving..." text at the top of the screen; instead, there'll be a nice
+subtle indicator in the top-right anywhere while you're scrolling through.
+
 ## [Autocompleter](autocompleter.user.js)
 
 Provides a `localStorage`-backed autocomplete for assignments, doing fuzzy-matching

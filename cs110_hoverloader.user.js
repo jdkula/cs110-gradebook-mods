@@ -26,6 +26,8 @@
             width: calc(80px / var(--lds-scale));
             height: calc(80px / var(--lds-scale));
             opacity: 0.7;
+            pointer-events: none;
+            user-select: none;
           }
           .lds-grid div {
             position: absolute;
