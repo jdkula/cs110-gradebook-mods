@@ -93,6 +93,7 @@
     enable: {},
     start: {},
     disable: {},
+    isEnabled: {},
     enableBleedingEdge() {
       console.log("Enabled bleeding edge mode, reload the page");
       config.useLatest = true;
@@ -127,6 +128,9 @@
     modctl.disable[key] = function () {
       disable(key);
     };
+    modctl.isEnabled[key] = function () {
+      return config.enabled.includes(key);
+    }
   });
 
   window.modctl = modctl;
