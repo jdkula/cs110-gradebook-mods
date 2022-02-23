@@ -74,11 +74,11 @@
   }
 
   function disable(name) {
-    const found = config.enabled.pop(name);
-    saveConfig();
-
-    if (found) {
+    const idx = config.enabled.indexOf(name);
+    if (idx >= 0) {
+      config.enabled.splice(idx, 1);
       console.log(name + " disabled");
+      saveConfig();
     } else {
       console.log(name + " already disabled");
     }
@@ -136,9 +136,11 @@
 
   window.modctl = modctl;
 
-  if (document.readyState === "complete") {
-    onLoad();
-  } else {
-    window.addEventListener("DOMContentLoaded", onLoad);
+  if (!window.DISABLE_MODCTL_AUTOLOAD) {
+    if (document.readyState === "complete") {
+      onLoad();
+    } else {
+      window.addEventListener("DOMContentLoaded", onLoad);
+    }
   }
 })();
