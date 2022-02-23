@@ -3,7 +3,6 @@
 // @version      1.0.4
 // @author       Jonathan Kula
 // @match        https://web.stanford.edu/*/cs110/*/assign*
-// @icon         https://www.google.com/s2/favicons?domain=stanford.edu
 // @grant        none
 // ==/UserScript==
 

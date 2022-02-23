@@ -3,8 +3,8 @@
 // @author      Jonathan Kula
 // @description This script provides a pop-over so you can scroll and grade CS110 assignments at the same time!
 // @version     1.8.8.7
+// @match       https://web.stanford.edu/*/cs110/*/assign*
 // @grant       none
-// @include https://web.stanford.edu/*/cs110/*/assign*
 // ==/UserScript==
 
 (() => {
