@@ -11,18 +11,19 @@
     "use strict";
 
     function apply(commentBox) {
+      // If not in DOM, do nothing
       if (!commentBox.closest("html")) return;
 
+      // If we're applying but nothing has changed, do nothing
       if (commentBox.innerHTML === commentBox.dataset["marked"]) return;
+
+      // Only apply to divs containing only text
+      if (commentBox.childElementCount > 0) return;
 
       const md = commentBox.innerHTML || commentBox.value;
       if (!md) return;
 
-      // @ts-ignore
-      commentBox.innerHTML = DOMPurify.sanitize(
-        // @ts-ignore
-        marked.parseInline(md)
-      );
+      commentBox.innerHTML = DOMPurify.sanitize(marked.parseInline(md));
 
       commentBox.dataset["marked"] = commentBox.innerHTML;
     }
@@ -38,7 +39,7 @@
         for (const changedNode of [
           ...mutation.addedNodes,
           ...mutation.removedNodes,
-          mutation.target
+          mutation.target,
         ]) {
           if (changedNode instanceof HTMLElement) {
             applyAll(changedNode);
@@ -47,7 +48,11 @@
       }
     });
 
-    mo.observe(document, { childList: true, subtree: true, characterData: true });
+    mo.observe(document, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
 
     applyAll(document);
   };

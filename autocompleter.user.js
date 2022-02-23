@@ -91,23 +91,33 @@
     class OptionsViewer {
       static _templates = {
         container: `
-        <div style="position: fixed; bottom: 0px; width: 100%; z-index: 1000; font-size: 9pt;" id="_options_viewer">
+        <div style="position: fixed; bottom: 0px; width: 100%; z-index: 1000; font-size: 9pt;" id="options_viewer">
         </div>
         `,
         style: `
-        <style id="_options_viewer_style">
-        </style>
-        `,
-        selectStyle: (selectedIdx) => `
-        <style id="_options_style_select">
-          #_options_viewer .options-viewer-option:nth-child(${selectedIdx}) {
-            background: blue !important;
+        <style id="options_viewer_style">
+          .options-viewer-option {
+            background: white;
+            width: 100%;
+            border: 1px solid gray;
+          }
+
+          #options_viewer:hover .options-viewer-option:hover {
+            background: blue;
             color: white;
           }
         </style>
         `,
-        item: (text) => `
-        <div style="background: white; width: 100%; border: 1px solid gray;" class="options-viewer-option">
+        selectStyle: (selectedIdx) => `
+        <style id="options_viewer_style_select">
+          #options_viewer:not(:hover) .options-viewer-option:nth-child(${selectedIdx}) {
+            background: blue;
+            color: white;
+          }
+        </style>
+        `,
+        item: (text, idx) => `
+        <div class="options-viewer-option" data-idx="${idx}">
           ${text}
         </div>
       `,
@@ -115,8 +125,23 @@
           `<span style="color: purple; font-weight: 700;">${score}%</span>&nbsp;&nbsp;${text}`,
       };
 
+      static _elements = {
+        get container() {
+          return document.getElementById("options_viewer");
+        },
+        get style() {
+          return document.getElementById("options_viewer_style");
+        },
+        get selectStyle() {
+          return document.getElementById("options_viewer_style_select");
+        },
+        get items() {
+          return document.querySelectorAll(".options-viewer-option");
+        },
+      };
+
       static create() {
-        if (document.getElementById("_options_viewer")) return;
+        if (this._elements.container) return;
 
         document.body.insertAdjacentHTML(
           "beforeend",
@@ -127,24 +152,25 @@
       }
 
       static destroy() {
-        const ov = document.getElementById("_options_viewer");
-        if (ov) document.body.removeChild(ov);
-
-        const os = document.getElementById("_options_viewer_style");
-        if (os) document.head.removeChild(os);
-
-        const oss = document.getElementById("_options_viewer_select_style");
-        if (oss) document.head.removeChild(oss);
+        if (this._elements.container) {
+          document.body.removeChild(this._elements.container);
+        }
+        if (this._elements.style) {
+          document.head.removeChild(this._elements.style);
+        }
+        if (this._elements.selectStyle) {
+          document.head.removeChild(this._elements.selectStyle);
+        }
       }
 
       static hide() {
         OptionsViewer.create();
-        document.getElementById("_options_viewer").style.display = "none";
+        this._elements.container.style.display = "none";
       }
 
       static show() {
         OptionsViewer.create();
-        document.getElementById("_options_viewer").style.display = "block";
+        this._elements.container.style.display = "block";
       }
 
       static clear() {
@@ -152,16 +178,22 @@
         OptionsViewer.create();
       }
 
-      static set(options) {
+      static set(options, onClick) {
         OptionsViewer.clear();
-        const ov = document.getElementById("_options_viewer");
-        for (const option of options) {
-          ov.insertAdjacentHTML("beforeend", this._templates.item(option));
+        for (let i = 0; i < options.length; i++) {
+          this._elements.container.insertAdjacentHTML(
+            "beforeend",
+            this._templates.item(options[i], i)
+          );
+        }
+        for (const node of this._elements.items) {
+          node.addEventListener("click", () => {
+            onClick(node.innerText, parseInt(node.dataset["idx"]));
+          });
         }
       }
 
-      static search(options, query) {
-        // @ts-ignore
+      static search(options, query, onClick) {
         const res = fuzzysort.go(query, options, {
           threshold: -1000,
           allowTypo: false,
@@ -181,14 +213,14 @@
           plainResults.push(match.target);
         }
 
-        OptionsViewer.set(results);
+        OptionsViewer.set(results, onClick);
         return plainResults;
       }
 
       static select(idx) {
-        const os = document.getElementById("_options_select_style");
-        if (os) {
-          document.head.removeChild(os);
+        const style = this._elements.selectStyle;
+        if (style) {
+          document.head.removeChild(style);
         }
 
         if (idx <= 0) return;
@@ -218,15 +250,14 @@
         this.el = el;
         this.el.autocomplete = "off";
 
-        this.startText = "";
+        this._startText = "";
 
-        this.storage = new AutocompleteStorage(el.name || el.id || "___ANY___");
+        this._storage = new AutocompleteStorage(
+          el.name || el.id || "___ANY___"
+        );
 
-        this.currOptions = null;
-        this.currSelected = 0;
-
-        this.escOnce = false;
-        this.dontRefresh = false;
+        this._currOptions = [];
+        this._currSelected = 0;
 
         this._onRemoveEvent = this._onRemoveEvent.bind(this);
         this._mutationObserver = new MutationObserver(this._onRemoveEvent);
@@ -242,6 +273,8 @@
 
         this._onKeyUp = this._onKeyUp.bind(this);
         el.addEventListener("keyup", this._onKeyUp);
+
+        this._onClickEvent = this._onClickEvent.bind(this);
       }
 
       disconnect() {
@@ -252,14 +285,25 @@
         delete this.el.__picker;
       }
 
+      _clear() {
+        this._currOptions = [];
+        this._currSelected = 0;
+        OptionsViewer.clear();
+      }
+
+      _onClickEvent(option, idx) {
+        this.el.value = this._currOptions[idx];
+        this._clear();
+      }
+
       _onRemoveEvent() {
         // if (this element was removed from the DOM)
         if (!this.el.closest("html")) {
           OptionsViewer.clear();
           if (!this.escOnce) {
-            this.storage.delOption(this.startText);
-            this.startText = this.el.value;
-            this.storage.saveOption(this.el.value);
+            this._storage.delOption(this._startText);
+            this._startText = this.el.value;
+            this._storage.saveOption(this.el.value);
           }
           this._mutationObserver.disconnect();
         }
@@ -267,20 +311,16 @@
 
       _onKeydownCapture(kp) {
         if (kp.code === "Escape") {
-          if (!this.escOnce) {
+          if (this._currOptions.length !== 0) {
             kp.preventDefault();
             kp.stopPropagation();
             kp.stopImmediatePropagation();
             this.escOnce = true;
           }
-          OptionsViewer.clear();
-        } else if (kp.code === "Enter" && this.currSelected !== 0) {
-          console.log("Selecting", this.currSelected, this.currOptions);
-          this.el.value = this.currOptions[this.currSelected - 1];
-          this.currSelected = 0;
-          OptionsViewer.select(0);
-          OptionsViewer.clear();
-          this.dontRefresh = true;
+          this._clear();
+        } else if (kp.code === "Enter" && this._currSelected !== 0) {
+          this.el.value = this._currOptions[this._currSelected - 1];
+          this._clear();
           kp.preventDefault();
           kp.stopPropagation();
           kp.stopImmediatePropagation();
@@ -289,48 +329,50 @@
 
       _onKeyDown(kp) {
         if (kp.code === "Escape") {
-          OptionsViewer.clear();
           return;
         }
 
         this.escOnce = false;
 
-        if (kp.code === "ArrowUp") {
-          // TODO: Go thru list
-          this.currSelected =
-            (this.currSelected - 1 + (this.currOptions.length + 1)) %
-            (this.currOptions.length + 1);
+        if (kp.code === "ArrowUp" && this._currOptions.length !== 0) {
+          this._currSelected =
+            (this._currSelected - 1 + (this._currOptions.length + 1)) %
+            (this._currOptions.length + 1);
           kp.preventDefault();
-        } else if (kp.code === "ArrowDown") {
-          // TODO: Go thru list
-          this.currSelected =
-            (this.currSelected + 1) % (this.currOptions.length + 1);
+        } else if (kp.code === "ArrowDown" && this._currOptions.length !== 0) {
+          this._currSelected =
+            (this._currSelected + 1) % (this._currOptions.length + 1);
           kp.preventDefault();
-        } else if (kp.code === "Delete" && this.currSelected !== 0) {
-          this.storage.delOption(this.currOptions[this.currSelected - 1]);
-          this.currSelected = 0;
+        } else if (kp.code === "Delete" && this._currSelected !== 0) {
+          this._storage.delOption(this._currOptions[this._currSelected - 1]);
+          this._currSelected = 0;
           kp.preventDefault();
         } else {
-          this.currSelected = 0;
+          this._currSelected = 0;
         }
       }
 
       _onKeyUp(kp) {
-        if (kp.code === "Escape") return;
+        if (
+          kp.code === "Escape" ||
+          kp.code === "ArrowDown" ||
+          kp.code === "ArrowUp" ||
+          kp.code === "ArrowLeft" ||
+          kp.code === "ArrowRight" ||
+          kp.code === "Enter"
+        ) {
+          return;
+        }
 
         OptionsViewer.clear();
         if (!this.el.value) return;
 
-        if (this.dontRefresh) {
-          this.dontRefresh = false;
-          return;
-        }
-
-        this.currOptions = OptionsViewer.search(
-          this.storage.getOptions(),
-          this.el.value
+        this._currOptions = OptionsViewer.search(
+          this._storage.getOptions(),
+          this.el.value,
+          this._onClickEvent
         );
-        OptionsViewer.select(this.currSelected);
+        OptionsViewer.select(this._currSelected);
       }
     }
 

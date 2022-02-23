@@ -13,7 +13,8 @@
     return;
   }
 
-  const popoutStyle = `
+  const templates = {
+    style: `
   <style id="grade-popout-style">
     #grade-popout-container {
       max-width: 1000px;
@@ -52,23 +53,77 @@
       padding-bottom: 5px;
     }
 
-    #grade-popout-button {
+    #grade-popout-container button {
       width: 30px;
       pointer-events: auto;
+
+    }
+    
+    #grade-popout-container.open #grade-popout-toggle-button::after {
+      content: "-"
+    }
+    #grade-popout-container:not(.open) #grade-popout-toggle-button::after {
+      content: "+"
     }
   </style>
-  `;
+  `,
 
-  const popoutHtml = `
-  <div id="grade-popout-container">
-    <span id="grade-popout-header">
-      <button id="grade-popout-button" title="Hide/show: Alt/Option+\` to toggle">
-        +
-      </button>
-      <span id="grade-popout-savetext" style="margin-left: 5px; display: none;"></span>
-    </span>
-  </div>
-  `;
+    popout: `
+    <div id="grade-popout-container" style="display: none;">
+      <span id="grade-popout-header">
+        <button id="grade-popout-close-button">
+          \u{292C}
+        </button>
+        <button id="grade-popout-toggle-button" title="Hide/show: Alt/Option+\` to toggle">
+        </button>
+        <span id="grade-popout-savetext" style="margin-left: 5px; display: none;"></span>
+      </span>
+    </div>
+    `,
+    openButton: `
+    <div style="display: flex; justify-content: flex-end">
+      <a href="#" id="grade-open-button">Enable Popout</a>
+    </div>
+  `,
+  };
+
+  const elements = {
+    get openButton() {
+      return document.getElementById("grade-open-button");
+    },
+    get closeButton() {
+      return document.getElementById("grade-popout-close-button");
+    },
+    get toggleButton() {
+      return document.getElementById("grade-popout-toggle-button");
+    },
+    get container() {
+      return document.getElementById("grade-popout-container");
+    },
+    get header() {
+      return document.getElementById("grade-popout-header");
+    },
+    get savetext() {
+      return document.getElementById("grade-popout-savetext");
+    },
+    get style() {
+      return document.getElementById("grade-popout-style");
+    },
+    gradebook: {
+      get ajaxWarning() {
+        return document.getElementById("ajax_warning");
+      },
+      get overviewHeader() {
+        return document.querySelector("div#sec_style > div.overview_header");
+      },
+      get overview() {
+        return document.getElementById("overview")
+      },
+      get bucketList() {
+        return document.querySelector(".bucket").parentElement
+      }
+    },
+  };
 
   class Popout {
     static install() {
@@ -76,29 +131,32 @@
         throw new Error("Popout already installed in the DOM");
       }
 
-      // The "saving..." text.
-      this._ajaxWarning = document.getElementById("ajax_warning");
-
       // Where we re-attach (after the overview header)
-      this._dock = document.querySelector(
-        "div#sec_style > div.overview_header"
-      );
+      this._dock = elements.gradebook.overviewHeader;
 
       // Pop-in/pull-down container that floats
-      document.head.insertAdjacentHTML("beforeend", popoutStyle);
-      document.body.insertAdjacentHTML("beforeend", popoutHtml);
-      this._container = document.getElementById("grade-popout-container");
-      this._toggle = document.getElementById("grade-popout-button");
-      this._saving = document.getElementById("grade-popout-savetext");
+      document.head.insertAdjacentHTML("beforeend", templates.style);
+      document.body.insertAdjacentHTML("beforeend", templates.popout);
+      this._dock.insertAdjacentHTML("beforebegin", templates.openButton);
+      this._enableButton = document.getElementById("grade-popout-enabler");
 
       this._onToggle = this._onToggle.bind(this);
-      this._toggle.addEventListener("click", this._onToggle);
+      elements.toggleButton.addEventListener("click", this._onToggle);
 
-      this._saving.innerText = this._ajaxWarning.innerText;
+      this._onEnable = this._onEnable.bind(this);
+      elements.openButton.addEventListener("click", this._onEnable);
+
+      this._onDisable = this._onDisable.bind(this);
+      elements.closeButton.addEventListener("click", this._onDisable);
+
+      elements.savetext.innerText = elements.gradebook.ajaxWarning.innerText;
       this._mutationObserver = new MutationObserver(() => {
-        this._saving.style.display = this._ajaxWarning.style.display;
+        elements.savetext.style.display =
+          elements.gradebook.ajaxWarning.style.display;
       });
-      this._mutationObserver.observe(this._ajaxWarning, { attributes: true });
+      this._mutationObserver.observe(elements.gradebook.ajaxWarning, {
+        attributes: true,
+      });
 
       // Alt+` will toggle
       this._onKeyDown = this._onKeyDown.bind(this);
@@ -109,24 +167,31 @@
     }
 
     static _isInstalled() {
-      return document.getElementById("grade-popout-container");
+      return !!elements.container;
     }
 
-    static _getElements() {
+    static get _elements() {
       return [
-        document.getElementById("overview"),
-        document.querySelector(".bucket").parentElement,
+        elements.gradebook.overview,
+        elements.gradebook.bucketList,
       ];
+    }
+
+    static _onDisable() {
+      elements.openButton.style.visibility = "";
+      elements.container.style.display = "none";
+    }
+    static _onEnable() {
+      elements.openButton.style.visibility = "hidden";
+      elements.container.style.display = "";
     }
 
     static _onToggle() {
       if (this._isPoppedOut) {
-        this._toggle.innerText = "+";
-        this._container.classList.remove("open");
+        elements.container.classList.remove("open");
         this.popin();
       } else {
-        this._toggle.innerText = "-";
-        this._container.classList.add("open");
+        elements.container.classList.add("open");
         this.popout();
       }
     }
@@ -134,7 +199,7 @@
     static _onKeyDown(e) {
       if (e.altKey && e.code === "Backquote") {
         e.preventDefault();
-        this._toggle.click();
+        elements.toggleButton.click();
       }
     }
 
@@ -142,7 +207,7 @@
       if (!this._isPoppedOut) return;
 
       let last = this._dock;
-      for (const node of this._getElements()) {
+      for (const node of this._elements) {
         last.parentNode.insertBefore(node, last.nextSibling);
         last = node;
       }
@@ -152,8 +217,8 @@
     static popout() {
       if (this._isPoppedOut) return;
 
-      for (const node of this._getElements()) {
-        this._container.appendChild(node);
+      for (const node of this._elements) {
+        elements.container.appendChild(node);
       }
       this._isPoppedOut = true;
     }
@@ -163,8 +228,8 @@
         throw new Error("Uninstall called before initializaiton");
       }
       this._mutationObserver.disconnect();
-      document.body.removeChild(this._container);
-      document.head.removeChild(document.getElementById("grade-popout-style"));
+      document.body.removeChild(elements.container);
+      document.head.removeChild(elements.style);
       document.removeEventListener("keydown", this._onKeyDown);
       this._initialized = false;
     }

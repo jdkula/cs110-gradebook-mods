@@ -46,6 +46,7 @@
 
   function load(name, script) {
     var scriptEl = document.createElement("script");
+    scriptEl.setAttribute("charset", "UTF-8");
     scriptEl.setAttribute("src", script);
     scriptEl.onload = function () {
       console.log("Script " + name + " has been loaded");
@@ -130,7 +131,7 @@
     };
     modctl.isEnabled[key] = function () {
       return config.enabled.includes(key);
-    }
+    };
   });
 
   window.modctl = modctl;
