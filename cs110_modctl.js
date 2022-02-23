@@ -11,20 +11,20 @@
 
   var scripts = {
     popover: {
-      stable_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/stable/cs110_popover.user.js",
-      latest_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/main/cs110_popover.user.js",
+      stable_url: "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@stable/cs110_popover.user.js",
+      latest_url: "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@main/cs110_popover.user.js",
     },
     autocompleter: {
-      stable_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/stable/autocompleter.user.js",
-      latest_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/main/autocompleter.user.js",
+      stable_url: "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@stable/autocompleter.user.js",
+      latest_url: "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@main/autocompleter.user.js",
     },
     markdown: {
-      stable_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/stable/cs110_markdown.user.js",
-      latest_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/main/cs110_markdown.user.js",
+      stable_url: "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@stable/cs110_markdown.user.js",
+      latest_url: "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@main/cs110_markdown.user.js",
     },
   };
 
-  var config = JSON.parse(localStorage.getItem(CONFIG_KEY) || "null");
+  var config = JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
   if (!config.enabled) {
     config.enabled = [];
   }
@@ -117,6 +117,8 @@
       disable(key);
     };
   });
+
+  window.modctl = modctl;
 
   if (document.readyState === "complete") {
     onLoad();

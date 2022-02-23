@@ -72,7 +72,7 @@
 
   class Popout {
     static install() {
-      if (this._isInstalled) {
+      if (this._isInstalled()) {
         throw new Error("Popout already installed in the DOM");
       }
 
@@ -91,7 +91,8 @@
       this._toggle = document.getElementById("grade-popout-button");
       this._saving = document.getElementById("grade-popout-savetext");
 
-      this._toggle.addEventListener("click", () => {});
+      this._onToggle = this._onToggle.bind(this);
+      this._toggle.addEventListener("click", this._onToggle);
 
       this._saving.innerText = this._ajaxWarning.innerText;
       this._mutationObserver = new MutationObserver(() => {

@@ -219,19 +219,19 @@
         this.escOnce = false;
         this.dontRefresh = false;
 
-        this._on_remove_event = this._onRemoveEvent.bind(this);
+        this._onRemoveEvent = this._onRemoveEvent.bind(this);
         this._mutationObserver = new MutationObserver(this._onRemoveEvent);
         this._mutationObserver.observe(document, {
           childList: true,
           subtree: true,
         });
 
-        this._keydown_capture = this._onKeydownCapture.bind(this);
+        this._onKeydownCapture = this._onKeydownCapture.bind(this);
         el.addEventListener("keydown", this._onKeydownCapture, true);
-        this._keydown = this._onKeyDown.bind(this);
+        this._onKeyDown = this._onKeyDown.bind(this);
         el.addEventListener("keydown", this._onKeyDown);
 
-        this._keyup = this._onKeyUp.bind(this);
+        this._onKeyUp = this._onKeyUp.bind(this);
         el.addEventListener("keyup", this._onKeyUp);
       }
 
