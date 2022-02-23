@@ -8,13 +8,13 @@
 // ==/UserScript==
 
 (() => {
-  // @ts-ignore
-  if (review && !review.staff) {
+  // Do not enable if we're not a staff mamber
+  if (window.review && !window.review.staff) {
     return;
   }
 
-  const style = `
-  <style>
+  const popoutStyle = `
+  <style id="grade-popout-style">
     #grade-popout-container {
       max-width: 1000px;
       margin: 5px auto 0 auto;
@@ -59,7 +59,7 @@
   </style>
   `;
 
-  const html = `
+  const popoutHtml = `
   <div id="grade-popout-container">
     <span id="grade-popout-header">
       <button id="grade-popout-button" title="Hide/show: Alt/Option+\` to toggle">
@@ -70,72 +70,105 @@
   </div>
   `;
 
-  let isPoppedOut = false;
+  class Popout {
+    static install() {
+      if (this._isInstalled) {
+        throw new Error("Popout already installed in the DOM");
+      }
 
-  // The "saving..." text.
-  const ajaxWarning = document.getElementById("ajax_warning");
+      // The "saving..." text.
+      this._ajaxWarning = document.getElementById("ajax_warning");
 
-  // Where we re-attach (after the overview header)
-  const dock = document.querySelector("div#sec_style > div.overview_header");
+      // Where we re-attach (after the overview header)
+      this._dock = document.querySelector(
+        "div#sec_style > div.overview_header"
+      );
 
-  // Gets the overview box and the pull-down selectors
-  const popouts = () => [
-    document.getElementById("overview"),
-    document.querySelector(".bucket").parentElement,
-  ];
+      // Pop-in/pull-down container that floats
+      document.head.insertAdjacentHTML("beforeend", popoutStyle);
+      document.body.insertAdjacentHTML("beforeend", popoutHtml);
+      this._container = document.getElementById("grade-popout-container");
+      this._toggle = document.getElementById("grade-popout-button");
+      this._saving = document.getElementById("grade-popout-savetext");
 
-  // Pop-in/pull-down container that floats
-  document.head.insertAdjacentHTML("beforeend", style);
-  document.body.insertAdjacentHTML("beforeend", html);
-  const container = document.getElementById("grade-popout-container");
-  const minmax = document.getElementById("grade-popout-button");
-  const saving = document.getElementById("grade-popout-savetext");
+      this._toggle.addEventListener("click", () => {});
 
-  minmax.addEventListener("click", () => {
-    if (isPoppedOut) {
-      minmax.innerText = "+";
-      container.classList.remove("open");
-      popin();
-    } else {
-      minmax.innerText = "-";
-      container.classList.add("open");
-      popout();
+      this._saving.innerText = this._ajaxWarning.innerText;
+      this._mutationObserver = new MutationObserver(() => {
+        this._saving.style.display = this._ajaxWarning.style.display;
+      });
+      this._mutationObserver.observe(this._ajaxWarning, { attributes: true });
+
+      // Alt+` will toggle
+      this._onKeyDown = this._onKeyDown.bind(this);
+      document.addEventListener("keydown", this._onKeyDown);
+
+      this._isPoppedOut = false;
+      this._initialized = true;
     }
-  });
 
-  saving.innerText = ajaxWarning.innerText;
-  const mutationObserver = new MutationObserver(() => {
-    saving.style.display = ajaxWarning.style.display;
-  });
-  mutationObserver.observe(ajaxWarning, { attributes: true });
-
-  // Alt+` will toggle
-  document.addEventListener("keydown", (e) => {
-    if (e.altKey && e.code === "Backquote") {
-      e.preventDefault();
-      minmax.click();
+    static _isInstalled() {
+      return document.getElementById("grade-popout-container");
     }
-  });
 
-  // Pulls overview and pull-downs into the popout
-  function popout() {
-    if (isPoppedOut) return;
-
-    for (const node of popouts()) {
-      container.appendChild(node);
+    static _getElements() {
+      return [
+        document.getElementById("overview"),
+        document.querySelector(".bucket").parentElement,
+      ];
     }
-    isPoppedOut = true;
+
+    static _onToggle() {
+      if (this._isPoppedOut) {
+        this._toggle.innerText = "+";
+        this._container.classList.remove("open");
+        this.popin();
+      } else {
+        this._toggle.innerText = "-";
+        this._container.classList.add("open");
+        this.popout();
+      }
+    }
+
+    static _onKeyDown(e) {
+      if (e.altKey && e.code === "Backquote") {
+        e.preventDefault();
+        this._toggle.click();
+      }
+    }
+
+    static popin() {
+      if (!this._isPoppedOut) return;
+
+      let last = this._dock;
+      for (const node of this._getElements()) {
+        last.parentNode.insertBefore(node, last.nextSibling);
+        last = node;
+      }
+      this._isPoppedOut = false;
+    }
+
+    static popout() {
+      if (this._isPoppedOut) return;
+
+      for (const node of this._getElements()) {
+        this._container.appendChild(node);
+      }
+      this._isPoppedOut = true;
+    }
+
+    static uninstall() {
+      if (!this._initialized) {
+        throw new Error("Uninstall called before initializaiton");
+      }
+      this._mutationObserver.disconnect();
+      document.body.removeChild(this._container);
+      document.head.removeChild(document.getElementById("grade-popout-style"));
+      document.removeEventListener("keydown", this._onKeyDown);
+      this._initialized = false;
+    }
   }
 
-  // Puts them back
-  function popin() {
-    if (!isPoppedOut) return;
-
-    let last = dock;
-    for (const node of popouts()) {
-      last.parentNode.insertBefore(node, last.nextSibling);
-      last = node;
-    }
-    isPoppedOut = false;
-  }
+  window.__GRADE_POPOUT = Popout;
+  Popout.install();
 })();
