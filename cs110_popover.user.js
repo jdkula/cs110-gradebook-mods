@@ -69,7 +69,7 @@
   `,
 
     popout: `
-    <div id="grade-popout-container" style="display: none;">
+    <div id="grade-popout-container" style="visibility: hidden;">
       <span id="grade-popout-header">
         <button id="grade-popout-close-button">
           \u{292C}
@@ -82,7 +82,7 @@
     `,
     openButton: `
     <div style="display: flex; justify-content: flex-end">
-      <a href="#" id="grade-open-button">Enable Popout</a>
+      <a href="javascript:void(0)" id="grade-open-button">Enable Popout</a>
     </div>
   `,
   };
@@ -117,11 +117,14 @@
         return document.querySelector("div#sec_style > div.overview_header");
       },
       get overview() {
-        return document.getElementById("overview")
+        return document.getElementById("overview");
       },
       get bucketList() {
-        return document.querySelector(".bucket").parentElement
-      }
+        return document.querySelector(".bucket").parentElement;
+      },
+      get fileList() {
+        return document.getElementById("file_list");
+      },
     },
   };
 
@@ -131,13 +134,13 @@
         throw new Error("Popout already installed in the DOM");
       }
 
-      // Where we re-attach (after the overview header)
-      this._dock = elements.gradebook.overviewHeader;
-
       // Pop-in/pull-down container that floats
       document.head.insertAdjacentHTML("beforeend", templates.style);
       document.body.insertAdjacentHTML("beforeend", templates.popout);
-      this._dock.insertAdjacentHTML("beforebegin", templates.openButton);
+      elements.gradebook.fileList.insertAdjacentHTML(
+        "beforebegin",
+        templates.openButton
+      );
       this._enableButton = document.getElementById("grade-popout-enabler");
 
       this._onToggle = this._onToggle.bind(this);
@@ -171,19 +174,16 @@
     }
 
     static get _elements() {
-      return [
-        elements.gradebook.overview,
-        elements.gradebook.bucketList,
-      ];
+      return [elements.gradebook.overview, elements.gradebook.bucketList];
     }
 
     static _onDisable() {
       elements.openButton.style.visibility = "";
-      elements.container.style.display = "none";
+      elements.container.style.visibility = "hidden";
     }
     static _onEnable() {
       elements.openButton.style.visibility = "hidden";
-      elements.container.style.display = "";
+      elements.container.style.visibility = "";
     }
 
     static _onToggle() {
@@ -206,7 +206,7 @@
     static popin() {
       if (!this._isPoppedOut) return;
 
-      let last = this._dock;
+      let last = elements.gradebook.overviewHeader;
       for (const node of this._elements) {
         last.parentNode.insertBefore(node, last.nextSibling);
         last = node;
