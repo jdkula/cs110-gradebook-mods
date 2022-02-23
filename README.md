@@ -20,7 +20,6 @@ Autocompleter depends on [farzher/fuzzysort](https://github.com/farzher/fuzzysor
 
 ## [CS110.md](cs110_markdown.user.js)
 
-Monkey-patches the `Review` class used in CS110's tooling to render markdown
-within comments.
+Automatically renders markdown within gradebook comments
 
 CS110.md depends on [cure53/DOMPurify](https://github.com/cure53/DOMPurify) and [markedjs/marked](https://github.com/markedjs/marked)
