@@ -14,19 +14,19 @@
       stable_url:
         "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@stable/cs110_popover.user.js",
       latest_url:
-        "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods/cs110_popover.user.js",
+        "https://web.stanford.edu/~jdkula/cs110_mods/cs110_popover.user.js",
     },
     autocompleter: {
       stable_url:
         "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@stable/autocompleter.user.js",
       latest_url:
-        "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods/autocompleter.user.js",
+        "https://web.stanford.edu/~jdkula/cs110_mods/autocompleter.user.js",
     },
     markdown: {
       stable_url:
         "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods@stable/cs110_markdown.user.js",
       latest_url:
-        "https://cdn.jsdelivr.net/gh/jdkula/cs110-gradebook-mods/cs110_markdown.user.js",
+        "https://web.stanford.edu/~jdkula/cs110_mods/cs110_markdown.user.js",
     },
   };
 
