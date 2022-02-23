@@ -11,16 +11,16 @@
 
   var scripts = {
     popover: {
-      stable_url: "",
-      latest_url: "",
+      stable_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/stable/cs110_popover.user.js",
+      latest_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/main/cs110_popover.user.js",
     },
     autocompleter: {
-      stable_url: "",
-      latest_url: "",
+      stable_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/stable/autocompleter.user.js",
+      latest_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/main/autocompleter.user.js",
     },
     markdown: {
-      stable_url: "",
-      latest_url: "",
+      stable_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/stable/cs110_markdown.user.js",
+      latest_url: "https://github.com/jdkula/cs110-gradebook-mods/raw/main/cs110_markdown.user.js",
     },
   };
 
