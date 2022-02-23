@@ -1,4 +1,3 @@
-//@ts-check
 // ==UserScript==
 // @name         Smart autocomplete for comments
 // @version      1.0.4
@@ -84,6 +83,11 @@
       }
     }
 
+    /*** =-=-=-=-=-= OptionsViewer =-=-=-=-=-= ****/
+    /**
+     * A small pop-under at the bottom of the screen that
+     * provides/shows search results
+     */
     class OptionsViewer {
       static _templates = {
         container: `
@@ -167,7 +171,7 @@
         const plainResults = [];
         for (const match of res) {
           const normedScore = (1 + match.score / 1000).toFixed(2);
-          const fancyResult = match.highlight(
+          const fancyResult = fuzzysort.highlight(
             match,
             '<span style="text-decoration: underline;">',
             "</span>"
@@ -196,7 +200,12 @@
       }
     }
 
-    class Picker {
+    /*** =-=-=-=-=-= AutocompleteProvider =-=-=-=-=-= ****/
+    /**
+     * A small class that attches itself to a textarea or input[type="text"]
+     * and provides enhanced autocomplete using OptionsViewer and AutocompleteStorage.
+     */
+    class AutocompleteProvider {
       constructor(el) {
         if (el._picker) {
           throw Error("Picker already initialized on element");
@@ -329,11 +338,11 @@
       if (!el.querySelectorAll) return;
 
       for (const node of el.querySelectorAll("textarea")) {
-        new Picker(node);
+        new AutocompleteProvider(node);
       }
 
       for (const node of el.querySelectorAll('input[type="text"]')) {
-        new Picker(node);
+        new AutocompleteProvider(node);
       }
     }
 
@@ -348,7 +357,8 @@
               try {
                 attachAll(node);
               } catch (e) {
-                console.warn(e);
+                // No-op on double-initalization
+                // console.warn(e);
               }
             }
           }
