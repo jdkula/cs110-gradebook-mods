@@ -46,7 +46,6 @@
 
     #grade-popout-header {
       padding-bottom: 0;
-      background: white;
       place-self: flex-start;
     }
     #grade-popout-container.open #grade-popout-header {
@@ -55,8 +54,21 @@
 
     #grade-popout-container button {
       width: 30px;
+      height: 20px;
       pointer-events: auto;
+      border: none;
+      font-size: large;
+      text-align: center;
+    }
 
+    #grade-popout-close-button {
+      color: black;
+      background-color: #c49292;
+    }
+
+    #grade-popout-toggle-button {
+      color: black;
+      background-color: light-gray;
     }
     
     #grade-popout-container.open #grade-popout-toggle-button::after {
@@ -187,6 +199,7 @@
     }
 
     static _onToggle() {
+      this._onEnable();
       if (this._isPoppedOut) {
         elements.container.classList.remove("open");
         this.popin();
