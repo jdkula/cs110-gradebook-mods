@@ -106,6 +106,15 @@
             background: blue;
             color: white;
           }
+
+          .options-viewer-score {
+            color: purple;
+            font-weight: 700;
+          }
+
+          #options_viewer:hover .options-viewer-option:hover .options-viewer-score {
+            color: yellow;
+          }
         </style>
         `,
         selectStyle: (selectedIdx) => `
@@ -113,6 +122,10 @@
           #options_viewer:not(:hover) .options-viewer-option:nth-child(${selectedIdx}) {
             background: blue;
             color: white;
+          }
+
+          #options_viewer:not(:hover) .options-viewer-option:nth-child(${selectedIdx}) .options-viewer-score {
+            color: yellow;
           }
         </style>
         `,
@@ -122,7 +135,7 @@
         </div>
       `,
         result: (score, text) =>
-          `<span style="color: purple; font-weight: 700;">${score}%</span>&nbsp;&nbsp;${text}`,
+          `<span class="options-viewer-score">${score}%</span>&nbsp;&nbsp;${text}`,
       };
 
       static _elements = {
