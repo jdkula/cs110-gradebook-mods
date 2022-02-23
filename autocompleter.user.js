@@ -355,9 +355,9 @@
       _onKeyUp(kp) {
         if (
           kp.code === "Escape" ||
-          kp.code === "ArrowDown" ||
-          kp.code === "ArrowUp" ||
+          (kp.code === "ArrowDown" && this._currOptions.length === 0) ||
           kp.code === "ArrowLeft" ||
+          (kp.code === "ArrowUp" && this._currOptions.length === 0) ||
           kp.code === "ArrowRight" ||
           kp.code === "Enter"
         ) {
