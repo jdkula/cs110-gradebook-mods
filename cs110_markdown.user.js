@@ -20,7 +20,7 @@
       // Only apply to divs containing only text
       if (commentBox.childElementCount > 0) return;
 
-      const md = commentBox.innerHTML || commentBox.value;
+      const md = commentBox.innerText || commentBox.value;
       if (!md) return;
 
       commentBox.innerHTML = DOMPurify.sanitize(marked.parseInline(md));
