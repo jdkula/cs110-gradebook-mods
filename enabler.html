@@ -1,0 +1,101 @@
+<html>
+  <head>
+    <title>CS110 gradebook mods enabler</title>
+    <script>
+      window.DISABLE_MODCTL_AUTOLOAD = true;
+    </script>
+    <script src="https://web.stanford.edu/~jdkula/cs110_mods/cs110_modctl.js"></script>
+    <style>
+      html {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding-top: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+
+      #buttons {
+        max-width: 500px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      #buttons button {
+        min-width: 50px;
+        min-height: 30px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <h1>CS110 Gradebook Code Mods</h1>
+      <div>
+        <p>
+          Check
+          <a href="https://github.com/jdkula/cs110-gradebook-mods">here</a> for
+          more information about what these enable!
+        </p>
+      </div>
+      <div id="buttons">
+        <button
+          class="enable-button"
+          data-name="Popover"
+          data-key="popover"
+        ></button>
+        <button
+          class="enable-button"
+          data-name="Subtle saving icon"
+          data-key="hoverloader"
+        ></button>
+        <button
+          class="enable-button"
+          data-name="Autocompleter"
+          data-key="autocompleter"
+        ></button>
+        <button
+          class="enable-button"
+          data-name="Markdown (only for you!)"
+          data-key="markdown"
+        ></button>
+      </div>
+    </main>
+
+    <script>
+      const popoverBtn = document.getElementById("popover");
+      const autocompleterBtn = document.getElementById("autocompleter");
+      function getButtons() {
+        return document.querySelectorAll(".enable-button");
+      }
+
+      function update() {
+        for (const button of getButtons()) {
+          const name = button.dataset["name"];
+          const key = button.dataset["key"];
+          const verb = modctl.isEnabled[key]() ? "Disable" : "Enable";
+          button.innerText = verb + " " + name;
+        }
+      }
+
+      function toggle(key) {
+        const action = modctl.isEnabled[key]() ? "disable" : "enable";
+        modctl[action][key]();
+        update();
+      }
+
+      for (const button of getButtons()) {
+        const key = button.dataset["key"];
+        button.onclick = () => toggle(key);
+      }
+
+      update();
+    </script>
+  </body>
+</html>

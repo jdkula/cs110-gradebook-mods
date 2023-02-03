@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         Smart autocomplete for comments
-// @version      1.0.4
+// @version      1.0.5
 // @author       Jonathan Kula
 // @match        https://web.stanford.edu/*/cs110/*/assign*
+// @match        https://web.stanford.edu/*/cs111/*/assign*
 // @grant        none
 // ==/UserScript==
 
@@ -134,8 +135,8 @@
           ${text}
         </div>
       `,
-        result: (score, text) =>
-          `<span class="options-viewer-score">${score}%</span>&nbsp;&nbsp;${text}`,
+        result: (score, text, weight) =>
+          `<span class="options-viewer-score">${score}%</span><span style="margin-left: 0.5em; ${weight ? 'font-weight: ' + weight + ';' : ''}">${text}</span>`,
       };
 
       static _elements = {
@@ -208,21 +209,22 @@
 
       static search(options, query, onClick) {
         const res = fuzzysort.go(query, options, {
-          threshold: -1000,
-          allowTypo: false,
+          //threshold: -10000,
           limit: 6,
         });
         const results = [];
         const plainResults = [];
         for (const match of res) {
-          const normedScore = (1 + match.score / 1000).toFixed(2);
+          let normedScore = (1 + match.score / 2000);
+          if (normedScore < 0) normedScore = (normedScore * 2000 / (100000 - 2000));
+          normedScore = Math.max((100 * normedScore).toFixed(2), -1000);
           const fancyResult = fuzzysort.highlight(
             match,
             '<span style="text-decoration: underline;">',
             "</span>"
           );
 
-          results.push(this._templates.result(normedScore, fancyResult));
+          results.push(this._templates.result(normedScore, fancyResult, normedScore > 0 ? 700 : null));
           plainResults.push(match.target);
         }
 
